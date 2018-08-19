@@ -1,0 +1,16 @@
+module:
+  version: VERSION
+  css:
+    layout:
+      css/site-gallery.module.css: {}
+
+# Библиотека позволяет реализовать отображение изображений во всплывающих окнах.
+fancybox:
+  version: VERSION
+  css:
+    component:
+      /libraries/fancybox/dist/jquery.fancybox.min.css: { minified: true }
+  js:
+    /libraries/fancybox/dist/jquery.fancybox.min.js: { minified: true }
+  dependencies:
+    - core/jquery

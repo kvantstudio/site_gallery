@@ -1,0 +1,21 @@
+langcode: ru
+status: true
+dependencies:
+  module:
+    - node
+id: node_site_gallery
+label: 'Название альбома медиагалереи'
+type: 'canonical_entities:node'
+pattern: 'gallery/[node:title]'
+selection_criteria:
+  18b7522e-9ba7-47a5-b07b-54a4f6b34f54:
+    id: node_type
+    bundles:
+      site_gallery: site_gallery
+    negate: false
+    context_mapping:
+      node: node
+    uuid: 18b7522e-9ba7-47a5-b07b-54a4f6b34f54
+selection_logic: and
+weight: -5
+relationships: {  }

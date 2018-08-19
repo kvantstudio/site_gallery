@@ -1,0 +1,8 @@
+langcode: ru
+status: true
+dependencies: {  }
+name: Медиагалерея
+vid: site_gallery
+description: 'Категории альбомов для медиагалереи.'
+hierarchy: 0
+weight: 0

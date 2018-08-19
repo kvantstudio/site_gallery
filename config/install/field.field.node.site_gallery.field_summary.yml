@@ -1,0 +1,20 @@
+langcode: ru
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_summary
+    - node.type.site_gallery
+  module:
+    - text
+id: node.site_gallery.field_summary
+field_name: field_summary
+entity_type: node
+bundle: site_gallery
+label: 'Краткое описание'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text_long

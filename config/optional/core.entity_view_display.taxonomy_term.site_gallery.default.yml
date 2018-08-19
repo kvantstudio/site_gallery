@@ -1,0 +1,35 @@
+langcode: ru
+status: true
+dependencies:
+  config:
+    - field.field.taxonomy_term.site_gallery.field_image
+    - responsive_image.styles.site_gallery_category
+    - taxonomy.vocabulary.site_gallery
+  module:
+    - responsive_image
+    - text
+_core:
+  default_config_hash: uM4nJPxymYotVrLiSqKLHUCbX1op0AM_hP1UYKo_CnA
+id: taxonomy_term.site_gallery.default
+targetEntityType: taxonomy_term
+bundle: site_gallery
+mode: default
+content:
+  description:
+    label: hidden
+    type: text_default
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  field_image:
+    weight: 1
+    label: hidden
+    settings:
+      responsive_image_style: site_gallery_category
+      image_link: content
+    third_party_settings: {  }
+    type: responsive_image
+    region: content
+hidden:
+  langcode: true

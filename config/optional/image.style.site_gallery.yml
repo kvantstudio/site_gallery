@@ -1,0 +1,34 @@
+langcode: ru
+status: true
+dependencies:
+  module:
+    - image_effects
+name: site_gallery
+label: 'Изображение медиагалереи'
+effects:
+  563e0230-bd10-40c6-8c1f-30122df3ebad:
+    uuid: 563e0230-bd10-40c6-8c1f-30122df3ebad
+    id: image_scale
+    weight: 1
+    data:
+      width: 425
+      height: 425
+      upscale: false
+  e6486856-4f16-49ad-9e67-dd5268317a94:
+    uuid: e6486856-4f16-49ad-9e67-dd5268317a94
+    id: image_effects_set_canvas
+    weight: 2
+    data:
+      canvas_size: exact
+      exact:
+        width: '425'
+        height: '425'
+        placement: center-center
+        x_offset: 0
+        y_offset: 0
+      relative:
+        left: 0
+        right: 0
+        top: 0
+        bottom: 0
+      canvas_color: '#FAFAFAFF'

@@ -1,0 +1,278 @@
+<?php
+
+/**
+ * @file
+ * Main file for the site_gallery.module.
+ */
+
+use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Render\Element;
+use Drupal\node\Entity\Node;
+
+/**
+ * Implements hook_theme().
+ */
+function site_gallery_theme($existing, $type, $theme, $path) {
+  return [
+    'taxonomy_term__site_gallery' => [
+      'variables' => [],
+      'template' => 'taxonomy-term--site-gallery',
+    ],
+    'node__site_gallery' => [
+      'render element' => 'elements',
+      'template' => 'node--site-gallery',
+    ],
+    'site_gallery_default_image_formatter' => [
+      'variables' => ['item' => NULL, 'item_attributes' => NULL, 'url' => NULL, 'image_style' => NULL],
+    ],
+    'site_gallery_main_image_formatter' => [
+      'variables' => ['item' => NULL, 'item_attributes' => NULL, 'url' => NULL, 'image_style' => NULL],
+    ],
+    'site_gallery_taxonomy_term' => [
+      'variables' => ['view' => NULL, 'rows' => NULL],
+    ],
+    'views_view_field__site_gallery__page__name' => [
+      'variables' => ['view' => NULL, 'field' => NULL, 'row' => NULL],
+      'template' => 'views-view-field--site-gallery--page--name',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function site_gallery_page_attachments(array &$attachments) {
+  $current_path = \Drupal::service('path.current')->getPath();
+  if (strpos($current_path, "/gallery/") >= 0) {
+    $attachments['#attached']['library'][] = 'site_gallery/module';
+  }
+}
+
+/**
+ * Implements hook_entity_presave().
+ */
+function site_gallery_entity_presave(Drupal\Core\Entity\EntityInterface $entity) {
+  if ($entity->getEntityTypeId() == 'node') {
+    if ($entity->bundle() == 'site_gallery') {
+      $images = $entity->field_image->getValue();
+      $langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
+      foreach ($images as $image) {
+        if (!empty($image['alt'])) {
+          $fid = $image['target_id'];
+          $file = \Drupal\file\Entity\File::load($fid);
+
+          // Расширение файла.
+          $image_factory = \Drupal::service('image.factory')->get($file->getFileUri());
+          $extension = image_type_to_extension($image_factory->getToolkit()->getType(), FALSE);
+
+          // Проверяем изменилось ли описание файла.
+          $filename = $file->getFilename();
+          $filename_without_extension = rtrim($filename, '.' . $extension);
+          if ($filename_without_extension != $image['alt']) {
+
+            // Получаем текущий URI без имени файла.
+            $file_lenght = strlen($filename);
+            $uri = $file->getFileUri();
+            $uri_dirname = pathinfo($uri, PATHINFO_DIRNAME);
+
+            // Получаем новое имя файла.
+            $filename = $image['alt'] . '.' . $extension;
+            $filename = \Drupal::transliteration()->transliterate($filename, $langcode, '');
+
+            // Очистка имени файла.
+            $filename = str_replace(' ', '-', $filename);
+            $filename = preg_replace('![^0-9A-Za-z_.-]!', '', $filename);
+            $filename = preg_replace('/(_)_+|(\.)\.+|(-)-+/', '\\1\\2\\3', $filename);
+            $filename = Unicode::strtolower($filename);
+
+            // Переименовываем файл.
+            $destination = $uri_dirname . '/' . $filename;
+            $file = file_move($file, $destination, FILE_EXISTS_RENAME);
+
+            // Устанавливаем новое имя файла в БД.
+            $file->setFilename($image['alt'] . '.' . $extension);
+            $file->save();
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Prepares variables for taxonomy-term--site-gallery.html.twig template.
+ *
+ * @param array $variables
+ */
+function template_preprocess_taxonomy_term__site_gallery(&$variables) {
+  // Описание категории.
+  $term = $variables['elements']['#taxonomy_term'];
+  $variables['term_description'] = $term->getDescription();
+}
+
+/**
+ * Prepares variables for node--site-gallery.html.twig template.
+ *
+ * @param array $variables
+ */
+function template_preprocess_node__site_gallery(&$variables) {
+  $variables['view_mode'] = $variables['elements']['#view_mode'];
+
+  $variables['teaser'] = $variables['view_mode'] == 'teaser';
+  $variables['node'] = $variables['elements']['#node'];
+
+  /** @var \Drupal\node\NodeInterface $node */
+  $node = $variables['node'];
+
+  $variables['date'] = \Drupal::service('date.formatter')->format($node->getCreatedTime(), 'long');
+  unset($variables['elements']['created']);
+
+  $variables['author_name'] = drupal_render($variables['elements']['uid']);
+  unset($variables['elements']['uid']);
+
+  $variables['url'] = $node->url('canonical', array(
+    'language' => $node->language(),
+  ));
+  $variables['label'] = $variables['elements']['title'];
+  unset($variables['elements']['title']);
+
+  $variables['page'] = ($variables['view_mode'] == 'full' && (node_is_page($node)) || (isset($node->in_preview) && in_array($node->preview_view_mode, array('full', 'default'))));
+
+  $variables += array('content' => array());
+  foreach (Element::children($variables['elements']) as $key) {
+    $variables['content'][$key] = $variables['elements'][$key];
+  }
+
+  $variables['attributes']['role'] = 'article';
+
+  // Изображения фотоальбома.
+  if ($variables['page']) {
+    $variables['images'] = [];
+    if (isset($variables['content']['field_image']['#items'])) {
+      $variables['count_image'] = $variables['content']['field_image']['#items']->count();
+      $i = 0;
+      while ($i <= $variables['count_image'] - 1):
+        $variables['images'][$i] = $variables['content']['field_image'][$i];
+        $i++;
+      endwhile;
+    }
+  } else {
+    $variables['content']['field_image'][0]['#theme'] = 'site_gallery_main_image_formatter';
+  }
+}
+
+/**
+ * Implements template_preprocess_site_gallery_default_image_formatter().
+ */
+function template_preprocess_site_gallery_default_image_formatter(&$variables) {
+  if ($variables['image_style']) {
+    $variables['image'] = [
+      '#theme' => 'image_style',
+      '#style_name' => $variables['image_style'],
+    ];
+  } else {
+    $variables['image'] = [
+      '#theme' => 'image',
+    ];
+  }
+  $variables['image']['#attributes'] = $variables['item_attributes'];
+
+  $item = $variables['item'];
+
+  if (Unicode::strlen($item->title) != 0) {
+    $variables['image']['#title'] = $item->title;
+  }
+
+  if (($entity = $item->entity) && empty($item->uri)) {
+    $variables['image']['#uri'] = $entity->getFileUri();
+  } else {
+    $variables['image']['#uri'] = $item->uri;
+  }
+
+  foreach (['width', 'height', 'alt'] as $key) {
+    $variables['image']["#$key"] = $item->$key;
+  }
+
+  $variables['is_node'] = FALSE;
+  if (\Drupal::routeMatch()->getRouteName() == 'entity.node.canonical') {
+    $node = \Drupal::routeMatch()->getParameter('node');
+    if ($node->getTitle() != $variables['image']["#alt"]) {
+      $variables['is_node'] = TRUE;
+    }
+  }
+
+  unset($variables['image']['#width']);
+  unset($variables['image']['#height']);
+}
+
+/**
+ * Implements template_preprocess_site_gallery_main_image_formatter().
+ */
+function template_preprocess_site_gallery_main_image_formatter(&$variables) {
+  if ($variables['image_style']) {
+    $variables['image'] = [
+      '#theme' => 'image_style',
+      '#style_name' => $variables['image_style'],
+    ];
+  } else {
+    $variables['image'] = [
+      '#theme' => 'image',
+    ];
+  }
+  $variables['image']['#attributes'] = $variables['item_attributes'];
+
+  $item = $variables['item'];
+
+  if (Unicode::strlen($item->title) != 0) {
+    $variables['image']['#title'] = $item->title;
+  }
+
+  if (($entity = $item->entity) && empty($item->uri)) {
+    $variables['image']['#uri'] = $entity->getFileUri();
+  } else {
+    $variables['image']['#uri'] = $item->uri;
+  }
+
+  foreach (['width', 'height', 'alt'] as $key) {
+    $variables['image']["#$key"] = $item->$key;
+  }
+
+  $variables['is_node'] = FALSE;
+  if (\Drupal::routeMatch()->getRouteName() == 'entity.node.canonical') {
+    $node = \Drupal::routeMatch()->getParameter('node');
+    if ($node->getTitle() != $variables['image']["#alt"]) {
+      $variables['is_node'] = TRUE;
+    }
+  }
+
+  unset($variables['image']['#width']);
+  unset($variables['image']['#height']);
+}
+
+/**
+ * Prepares variables for views site-gallery-taxonomy-term template.
+ *
+ * Template: site-gallery-taxonomy-term.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - view: The view object.
+ *   - rows: An array of row items. Each row is an array of content.
+ */
+function template_preprocess_site_gallery_taxonomy_term(&$variables) {
+  template_preprocess_views_view_unformatted($variables);
+}
+
+/**
+ * Prepares variables for views views-view-field--site_gallery--page--name template.
+ *
+ * Template: views-view-field--site_gallery--page--name.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - view: The view object.
+ *   - rows: An array of row items. Each row is an array of content.
+ */
+function template_preprocess_views_view_field__site_gallery__page__name(&$variables) {
+  template_preprocess_views_view_field($variables);
+}

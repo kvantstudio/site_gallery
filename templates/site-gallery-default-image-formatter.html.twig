@@ -1,0 +1,27 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display a formatted image field.
+ *
+ * Available variables:
+ * - image: A collection of image data.
+ * - image_style: An optional image style.
+ * - url: An optional URL the image can be linked to.
+ *
+ * @see template_preprocess_site_gallery_default_image_formatter()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if url %}
+  <a href="{{ url }}" class="node__site-gallery-link" data-fancybox="images" {% if is_node %}data-caption="{{ image['#alt'] }}"{% endif %}>
+    {{ image }}
+    {% if is_node %}
+      <div class="node__site-galary-description">
+        <span class="node__site-galary-description-label">{{ image['#alt'] }}</span>
+      </div>
+    {% endif %}
+  </a>
+{% else %}
+  {{ image }}
+{% endif %}

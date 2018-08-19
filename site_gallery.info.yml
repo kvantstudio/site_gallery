@@ -1,0 +1,15 @@
+name: 'Media gallery'
+description: 'Module to create a gallery on Drupal 8.'
+package: Kvantstudio
+type: module
+core: '8.x'
+version: '1.0.0-beta.1'
+dependencies:
+ - responsive_image
+ - image_effects
+ - views
+ - views_ui
+ - tvi
+ - kvantstudio
+interface translation project: site_gallery
+interface translation server pattern: modules/custom/site_gallery/translations/%project.%language.po

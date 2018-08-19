@@ -1,0 +1,27 @@
+{% if not page %}
+    <div class="node__site-gallery">
+        <a class="node__site-gallery-link" href="{{ url }}" rel="bookmark">
+            {{ content.field_image.0 }}
+            <div class="node__site-galary-description">
+                <span class="node__site-galary-description-label">{{ label }}</span>
+            </div>
+        </a>
+    </div>
+{% endif %}
+{% if page %}
+    {{ attach_library('site_gallery/fancybox') }}
+    <article class="node">
+        <div{{ content_attributes.addclass( 'node__content', 'clearfix') }}>
+            {% if content.field_summary %}
+                {{ content.field_summary }}
+            {% endif %}
+            <div class="site-gallery">
+                {% for id, image in images %}
+                    <div class="site-gallery__item">
+                        {{ image }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </article>
+{% endif %}

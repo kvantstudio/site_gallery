@@ -1,0 +1,22 @@
+langcode: ru
+status: true
+dependencies:
+  module:
+    - ctools
+    - taxonomy
+id: taxonomy_site_gallery
+label: 'Название категории медиагалереи'
+type: 'canonical_entities:taxonomy_term'
+pattern: 'gallery/[term:name]'
+selection_criteria:
+  c8030d77-dfea-40d2-8985-d5212fdd2cba:
+    id: 'entity_bundle:taxonomy_term'
+    bundles:
+      site_gallery: site_gallery
+    negate: false
+    context_mapping:
+      taxonomy_term: taxonomy_term
+    uuid: c8030d77-dfea-40d2-8985-d5212fdd2cba
+selection_logic: and
+weight: -5
+relationships: {  }

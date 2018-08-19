@@ -1,0 +1,22 @@
+langcode: ru
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_youtube
+    - node.type.site_gallery
+  module:
+    - link
+id: node.site_gallery.field_youtube
+field_name: field_youtube
+entity_type: node
+bundle: site_gallery
+label: 'Ссылка на ролик YouTube'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  link_type: 16
+  title: 1
+field_type: link

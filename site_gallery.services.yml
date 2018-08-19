@@ -1,0 +1,12 @@
+services:
+  site_gallery.taxonomy_breadcrumb:
+    class: Drupal\site_gallery\Breadcrumb\SiteGalleryTermBreadcrumbBuilder
+    arguments: ['@entity.manager']
+    tags:
+      - { name: breadcrumb_builder, priority: 1003 }
+
+  site_gallery.breadcrumb:
+    class: Drupal\site_gallery\Breadcrumb\SiteGalleryBreadcrumbBuilder
+    arguments: ['@entity.manager']
+    tags:
+      - { name: breadcrumb_builder, priority: 1 }

@@ -1,0 +1,29 @@
+langcode: ru
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_gallery_category
+    - node.type.site_gallery
+    - taxonomy.vocabulary.site_gallery
+_core:
+  default_config_hash: 6vBo2LcCHRd2bV1W0BYZG8_nWI6PdKpUY5iKcFU-odk
+id: node.site_gallery.field_gallery_category
+field_name: field_gallery_category
+entity_type: node
+bundle: site_gallery
+label: 'Категория медиагалереи'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:taxonomy_term'
+  handler_settings:
+    target_bundles:
+      site_gallery: site_gallery
+    sort:
+      field: _none
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference
